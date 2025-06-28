@@ -34,18 +34,22 @@ st.write("--- End Debugging Information ---")
 
 # Cumulative standard normal distribution function
 def N(x):
-    # Ensure norm is not None
-
-
-
-
-# Cumulative standard normal distribution function
-def N(x):
+    # Ensure norm is not None before calling it
+    if norm is None:
+        st.error("Error: scipy.stats.norm is not available. Cannot calculate N(x).")
+        st.stop()
     return norm.cdf(x)
 
 # Probability density function of the standard normal distribution
 def phi(x):
+    # Ensure norm is not None before calling its pdf method
+    if norm is None:
+        st.error("Error: scipy.stats.norm is not available. Cannot calculate phi(x).")
+        st.stop()
     return norm.pdf(x)
+
+# ... rest of your black_scholes_app.py code ...
+
 
 @st.cache_data
 def calculate_black_scholes(S, K, T, r, sigma, q, option_type):
