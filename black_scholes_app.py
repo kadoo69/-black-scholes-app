@@ -1,28 +1,3 @@
-import streamlit as st
-import numpy as np
-from scipy.stats import norm
-from scipy.optimize import brentq
-import pandas as pd
-import altair as alt
-
-# Try to import plotly, set flag if available
-try:
-    import plotly.graph_objects as go
-    PLOTLY_AVAILABLE = True
-except ImportError:
-    PLOTLY_AVAILABLE = False
-    st.warning("Plotly is not installed. 3D surface plots and heatmaps will be disabled.")
-
-# Rest of your code remains the same...
-# (I'll show just the parts that need modification)
-
-# Cumulative standard normal distribution function
-def N(x):
-    return norm.cdf(x)
-
-# Probability density function of the standard normal distribution
-def phi(x):
-    return norm.pdf(x)
 
 @st.cache_data
 def calculate_black_scholes(S, K, T, r, sigma, q, option_type):
