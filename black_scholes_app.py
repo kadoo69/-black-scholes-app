@@ -1,6 +1,14 @@
 import streamlit as st
 import sys
 import subprocess
+import numpy as np
+import pandas as pd
+import altair as alt
+import plotly.graph_objects as go
+
+# Initialize norm and brentq to None, they will be assigned if scipy is imported successfully
+norm = None
+brentq = None
 
 st.write("--- Debugging Information ---")
 st.write("Python executable:", sys.executable)
@@ -9,8 +17,11 @@ st.write("Python path:", sys.path)
 try:
     import scipy
     st.write("Scipy version:", scipy.__version__)
+    from scipy.stats import norm
+    from scipy.optimize import brentq
 except ImportError as e:
-    st.error(f"Scipy import error: {e}")
+    st.error(f"Scipy import error: {e}. Please ensure scipy is installed and compatible.")
+    st.stop()  # Stop the app if scipy cannot be imported
 
 st.write("--- Installed Packages (pip freeze) ---")
 try:
@@ -21,15 +32,10 @@ except Exception as e:
 
 st.write("--- End Debugging Information ---")
 
-# Original imports (ensure these are NOT duplicated from above)
-import numpy as np
-from scipy.stats import norm
-from scipy.optimize import brentq
-import pandas as pd
-import altair as alt
-import plotly.graph_objects as go
+# Cumulative standard normal distribution function
+def N(x):
+    # Ensure norm is not None
 
-# ... rest of your black_scholes_app.py code ...
 
 
 
