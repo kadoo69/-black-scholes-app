@@ -1,42 +1,35 @@
 import streamlit as st
-    2 import sys
-    3 import subprocess
-    4 
-    5 st.write("--- Debugging Information ---")
-    6 st.write("Python executable:", sys.executable)
-    7 st.write("Python path:", sys.path)
-    8 
-    9 try:
-   10     import scipy
-   11     st.write("Scipy version:", scipy.__version__)
-   12 except ImportError as e:
-   13     st.error(f"Scipy import error: {e}")
-   14 
-   15 st.write("--- Installed Packages (pip freeze) ---")
-   16 try:
-   17     result = subprocess.run(['pip', 'freeze'], capture_output=True, text=True, check=True)
-   18     st.code(result.stdout)
-   19 except Exception as e:
-   20     st.error(f"Error running pip freeze: {e}")
-   21 st.write("--- End Debugging Information ---")
-   22 
-   23 # Original imports (ensure these are NOT duplicated from above)
-   24 import numpy as np
-   25 from scipy.stats import norm
-   26 from scipy.optimize import brentq
-   27 import pandas as pd
-   28 import altair as alt
-   29 import plotly.graph_objects as go
-   30 
-   31 # Cumulative standard normal distribution function
-   32 def N(x):
-   33     return norm.cdf(x)
-   34 
-   35 # Probability density function of the standard normal distribution
-   36 def phi(x):
-   37     return norm.pdf(x)
-   38 
-   39 # ... rest of your black_scholes_app.py code ...
+import sys
+import subprocess
+
+st.write("--- Debugging Information ---")
+st.write("Python executable:", sys.executable)
+st.write("Python path:", sys.path)
+
+try:
+    import scipy
+    st.write("Scipy version:", scipy.__version__)
+except ImportError as e:
+    st.error(f"Scipy import error: {e}")
+
+st.write("--- Installed Packages (pip freeze) ---")
+try:
+    result = subprocess.run(['pip', 'freeze'], capture_output=True, text=True, check=True)
+    st.code(result.stdout)
+except Exception as e:
+    st.error(f"Error running pip freeze: {e}")
+
+st.write("--- End Debugging Information ---")
+
+# Original imports (ensure these are NOT duplicated from above)
+import numpy as np
+from scipy.stats import norm
+from scipy.optimize import brentq
+import pandas as pd
+import altair as alt
+import plotly.graph_objects as go
+
+# ... rest of your black_scholes_app.py code ...
 
 
 
