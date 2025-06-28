@@ -15,15 +15,24 @@ st.write("--- Debugging Information ---")
 st.write("Python executable:", sys.executable)
 st.write("Python path:", sys.path)
 
-# Conditional import for scipy
+st.write("--- Installed Packages (pip freeze) ---")
+try:
+    result = subprocess.run(['pip', 'freeze'], capture_output=True, text=True, check=True)
+    st.code(result.stdout)
+except Exception as e:
+    st.error(f"Error running pip freeze: {e}")
+
+# Conditional import for scipy - moved after pip freeze
 try:
     import scipy
     st.write("Scipy version:", scipy.__version__)
-    from scipy.stats import norm  # THIS MUST BE INSIDE THE TRY BLOCK
-    from scipy.optimize import brentq  # THIS MUST BE INSIDE THE TRY BLOCK
+    from scipy.stats import norm
+    from scipy.optimize import brentq
 except ImportError as e:
-    st.error(f"Scipy import error: {e}. Please ensure scipy is installed and compatible.")
-    st.stop()  # Stop the app if scipy cannot be imported, as it's fundamental
+    st.error(f"Scipy import error: {e}. This app requires scipy to function. Please check your requirements.txt and Streamlit Cloud logs.")
+    # Do NOT st.stop() here, we want to see the full debugging output
+    norm = None # Ensure norm is None if import fails
+    brentq = None # Ensure brentq is None if import fails
 
 # Conditional import for plotly
 try:
@@ -33,21 +42,15 @@ try:
 except ImportError as e:
     st.warning(f"Plotly import warning: {e}. 3D plots and heatmaps will be disabled.")
 
-st.write("--- Installed Packages (pip freeze) ---")
-try:
-    result = subprocess.run(['pip', 'freeze'], capture_output=True, text=True, check=True)
-    st.code(result.stdout)
-except Exception as e:
-    st.error(f"Error running pip freeze: {e}")
-
 st.write("--- End Debugging Information ---")
+
 
 # Cumulative standard normal distribution function
 def N(x):
     # Ensure norm is not None before calling it
     if norm is None:
         st.error("Error: scipy.stats.norm is not available. Cannot calculate N(x).")
-        st.stop()  # This should ideally not be reached if st.stop() above works
+        st.stop() # Stop the app here if scipy is truly missing and N is called
     return norm.cdf(x)
 
 # Probability density function of the standard normal distribution
@@ -55,7 +58,7 @@ def phi(x):
     # Ensure norm is not None before calling its pdf method
     if norm is None:
         st.error("Error: scipy.stats.norm is not available. Cannot calculate phi(x).")
-        st.stop()  # This should ideally not be reached if st.stop() above works
+        st.stop() # Stop the app here if scipy is truly missing and phi is called
     return norm.pdf(x)
 
 # ... rest of your black_scholes_app.py code ...
