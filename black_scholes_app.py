@@ -5,6 +5,39 @@ from scipy.optimize import brentq
 import pandas as pd
 import altair as alt
 import plotly.graph_objects as go
+ import streamlit as st
+    2 import sys
+    3 import subprocess
+    4 
+    5 st.write("--- Debugging Information ---")
+    6 st.write("Python executable:", sys.executable)
+    7 st.write("Python path:", sys.path)
+    8 
+    9 try:
+   10     import scipy
+   11     st.write("Scipy version:", scipy.__version__)
+   12 except ImportError as e:
+   13     st.error(f"Scipy import error: {e}")
+   14 
+   15 st.write("--- Installed Packages (pip freeze) ---")
+   16 try:
+   17     result = subprocess.run(['pip', 'freeze'], capture_output=True, text=True, check=True)
+   18     st.code(result.stdout)
+   19 except Exception as e:
+   20     st.error(f"Error running pip freeze: {e}")
+   21 st.write("--- End Debugging Information ---")
+   22 
+   23 # Your existing imports and code will follow here
+   24 # import numpy as np
+   25 # from scipy.stats import norm
+   26 # from scipy.optimize import brentq
+   27 # import pandas as pd
+   28 # import altair as alt
+   29 # import plotly.graph_objects as go
+   30 
+   31 # ... rest of your black_scholes_app.py code ...
+
+
 
 # Cumulative standard normal distribution function
 def N(x):
