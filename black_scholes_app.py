@@ -1,55 +1,28 @@
 import streamlit as st
-import sys
-import subprocess
 import numpy as np
+from scipy.stats import norm
+from scipy.optimize import brentq
 import pandas as pd
 import altair as alt
-import plotly.graph_objects as go
 
-# Initialize norm and brentq to None, they will be assigned if scipy is imported successfully
-norm = None
-brentq = None
-
-st.write("--- Debugging Information ---")
-st.write("Python executable:", sys.executable)
-st.write("Python path:", sys.path)
-
+# Try to import plotly, set flag if available
 try:
-    import scipy
-    st.write("Scipy version:", scipy.__version__)
-    from scipy.stats import norm
-    from scipy.optimize import brentq
-except ImportError as e:
-    st.error(f"Scipy import error: {e}. Please ensure scipy is installed and compatible.")
-    st.stop()  # Stop the app if scipy cannot be imported
+    import plotly.graph_objects as go
+    PLOTLY_AVAILABLE = True
+except ImportError:
+    PLOTLY_AVAILABLE = False
+    st.warning("Plotly is not installed. 3D surface plots and heatmaps will be disabled.")
 
-st.write("--- Installed Packages (pip freeze) ---")
-try:
-    result = subprocess.run(['pip', 'freeze'], capture_output=True, text=True, check=True)
-    st.code(result.stdout)
-except Exception as e:
-    st.error(f"Error running pip freeze: {e}")
-
-st.write("--- End Debugging Information ---")
+# Rest of your code remains the same...
+# (I'll show just the parts that need modification)
 
 # Cumulative standard normal distribution function
 def N(x):
-    # Ensure norm is not None before calling it
-    if norm is None:
-        st.error("Error: scipy.stats.norm is not available. Cannot calculate N(x).")
-        st.stop()
     return norm.cdf(x)
 
 # Probability density function of the standard normal distribution
 def phi(x):
-    # Ensure norm is not None before calling its pdf method
-    if norm is None:
-        st.error("Error: scipy.stats.norm is not available. Cannot calculate phi(x).")
-        st.stop()
     return norm.pdf(x)
-
-# ... rest of your black_scholes_app.py code ...
-
 
 @st.cache_data
 def calculate_black_scholes(S, K, T, r, sigma, q, option_type):
@@ -341,69 +314,73 @@ try:
     ).interactive()
     st.altair_chart(chart_vega, use_container_width=True)
 
-    # 3D Surface Plot: Option Price vs. Time vs. Volatility
-    st.subheader("3D Option Price Surface")
-    
-    # Define ranges for the 3D plot
-    time_range_3d = np.linspace(0.01, 2.0, 30) # Time from 0.01 to 2 years
-    vol_range_3d = np.linspace(0.05, 1.0, 30) # Volatility from 5% to 100%
+    # 3D Surface Plot and Heatmap - Only if Plotly is available
+    if PLOTLY_AVAILABLE:
+        # 3D Surface Plot: Option Price vs. Time vs. Volatility
+        st.subheader("3D Option Price Surface")
+        
+        # Define ranges for the 3D plot
+        time_range_3d = np.linspace(0.01, 2.0, 30) # Time from 0.01 to 2 years
+        vol_range_3d = np.linspace(0.05, 1.0, 30) # Volatility from 5% to 100%
 
-    Z = np.zeros((len(time_range_3d), len(vol_range_3d)))
+        Z = np.zeros((len(time_range_3d), len(vol_range_3d)))
 
-    for i, t_val in enumerate(time_range_3d):
-        for j, vol_val in enumerate(vol_range_3d):
-            try:
-                # Use the current S, K, r, q, option_type from sidebar
-                price_3d = calculate_black_scholes(S, K, t_val, r, vol_val, q, option_type)['price']
-                Z[i, j] = price_3d
-            except ValueError:
-                Z[i, j] = np.nan # Handle invalid inputs in the loop
+        for i, t_val in enumerate(time_range_3d):
+            for j, vol_val in enumerate(vol_range_3d):
+                try:
+                    # Use the current S, K, r, q, option_type from sidebar
+                    price_3d = calculate_black_scholes(S, K, t_val, r, vol_val, q, option_type)['price']
+                    Z[i, j] = price_3d
+                except ValueError:
+                    Z[i, j] = np.nan # Handle invalid inputs in the loop
 
-    fig = go.Figure(data=[go.Surface(z=Z, x=vol_range_3d * 100, y=time_range_3d)])
-    fig.update_layout(
-        title='Option Price Surface (Volatility vs. Time)',
-        scene = dict(
-            xaxis_title='Volatility (%)',
-            yaxis_title='Time to Expiration (Years)',
-            zaxis_title='Option Price',
-            aspectratio=dict(x=1, y=1, z=0.7),
-            camera_eye=dict(x=1.8, y=1.8, z=0.8)
+        fig = go.Figure(data=[go.Surface(z=Z, x=vol_range_3d * 100, y=time_range_3d)])
+        fig.update_layout(
+            title='Option Price Surface (Volatility vs. Time)',
+            scene = dict(
+                xaxis_title='Volatility (%)',
+                yaxis_title='Time to Expiration (Years)',
+                zaxis_title='Option Price',
+                aspectratio=dict(x=1, y=1, z=0.7),
+                camera_eye=dict(x=1.8, y=1.8, z=0.8)
+            )
         )
-    )
-    st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True)
 
-    # Heatmap: Option Price vs. Underlying Stock Price vs. Volatility
-    st.subheader("Option Price Heatmap (Stock Price vs. Volatility)")
+        # Heatmap: Option Price vs. Underlying Stock Price vs. Volatility
+        st.subheader("Option Price Heatmap (Stock Price vs. Volatility)")
 
-    # Define ranges for the heatmap
-    heatmap_S_range = np.linspace(S * 0.7, S * 1.3, 50) # Stock Price range
-    heatmap_sigma_range = np.linspace(0.05, 0.8, 50) # Volatility range (5% to 80%)
+        # Define ranges for the heatmap
+        heatmap_S_range = np.linspace(S * 0.7, S * 1.3, 50) # Stock Price range
+        heatmap_sigma_range = np.linspace(0.05, 0.8, 50) # Volatility range (5% to 80%)
 
-    Z_heatmap = np.zeros((len(heatmap_sigma_range), len(heatmap_S_range)))
+        Z_heatmap = np.zeros((len(heatmap_sigma_range), len(heatmap_S_range)))
 
-    for i, current_sigma in enumerate(heatmap_sigma_range):
-        for j, current_S in enumerate(heatmap_S_range):
-            try:
-                # Calculate option price for each combination
-                price_hm = calculate_black_scholes(current_S, K, T, r, current_sigma, q, option_type)['price']
-                Z_heatmap[i, j] = price_hm
-            except ValueError:
-                Z_heatmap[i, j] = np.nan # Handle invalid inputs
+        for i, current_sigma in enumerate(heatmap_sigma_range):
+            for j, current_S in enumerate(heatmap_S_range):
+                try:
+                    # Calculate option price for each combination
+                    price_hm = calculate_black_scholes(current_S, K, T, r, current_sigma, q, option_type)['price']
+                    Z_heatmap[i, j] = price_hm
+                except ValueError:
+                    Z_heatmap[i, j] = np.nan # Handle invalid inputs
 
-    fig_heatmap = go.Figure(data=go.Heatmap(
-        z=Z_heatmap,
-        x=heatmap_S_range,
-        y=heatmap_sigma_range * 100, # Display volatility as percentage
-        colorscale='RdYlGn', # Red-Yellow-Green for comparison
-        colorbar=dict(title='Option Price')
-    ))
+        fig_heatmap = go.Figure(data=go.Heatmap(
+            z=Z_heatmap,
+            x=heatmap_S_range,
+            y=heatmap_sigma_range * 100, # Display volatility as percentage
+            colorscale='RdYlGn', # Red-Yellow-Green for comparison
+            colorbar=dict(title='Option Price')
+        ))
 
-    fig_heatmap.update_layout(
-        title='Option Price Heatmap',
-        xaxis_title='Underlying Stock Price',
-        yaxis_title='Volatility (%)'
-    )
-    st.plotly_chart(fig_heatmap, use_container_width=True)
+        fig_heatmap.update_layout(
+            title='Option Price Heatmap',
+            xaxis_title='Underlying Stock Price',
+            yaxis_title='Volatility (%)'
+        )
+        st.plotly_chart(fig_heatmap, use_container_width=True)
+    else:
+        st.info("Install Plotly to see 3D surface plots and heatmaps. Add 'plotly>=5.17.0' to your requirements.txt file.")
 
     # P/L Diagram
     st.subheader("Profit/Loss Diagram at Expiration")
