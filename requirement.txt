@@ -1,6 +1,6 @@
 streamlit
 numpy
-scipy
+scipy==1.10.1 
 pandas
 altair
 plotly
