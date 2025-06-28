@@ -1,11 +1,4 @@
 import streamlit as st
-import numpy as np
-from scipy.stats import norm
-from scipy.optimize import brentq
-import pandas as pd
-import altair as alt
-import plotly.graph_objects as go
- import streamlit as st
     2 import sys
     3 import subprocess
     4 
@@ -27,15 +20,23 @@ import plotly.graph_objects as go
    20     st.error(f"Error running pip freeze: {e}")
    21 st.write("--- End Debugging Information ---")
    22 
-   23 # Your existing imports and code will follow here
-   24 # import numpy as np
-   25 # from scipy.stats import norm
-   26 # from scipy.optimize import brentq
-   27 # import pandas as pd
-   28 # import altair as alt
-   29 # import plotly.graph_objects as go
+   23 # Original imports (ensure these are NOT duplicated from above)
+   24 import numpy as np
+   25 from scipy.stats import norm
+   26 from scipy.optimize import brentq
+   27 import pandas as pd
+   28 import altair as alt
+   29 import plotly.graph_objects as go
    30 
-   31 # ... rest of your black_scholes_app.py code ...
+   31 # Cumulative standard normal distribution function
+   32 def N(x):
+   33     return norm.cdf(x)
+   34 
+   35 # Probability density function of the standard normal distribution
+   36 def phi(x):
+   37     return norm.pdf(x)
+   38 
+   39 # ... rest of your black_scholes_app.py code ...
 
 
 
